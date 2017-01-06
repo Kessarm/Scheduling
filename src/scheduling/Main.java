@@ -10,9 +10,11 @@ public class Main {
 
 	
 	public static void main (String[] args){
-		ParsedData instance = new ParsedData("C:\\Users\\Mehdiii\\Documents\\scheduling_case-study\\dat\\inst001");
-		instance.cplex();
-	}
+		for(int i=0;i<10;i++){
+		ParsedData instance = new ParsedData("C:\\Users\\Mehdi\\Documents\\scheduling_case-study\\dat1\\inst215");
+		instance.cplex();}
+		}
+	
 	
 	
 	

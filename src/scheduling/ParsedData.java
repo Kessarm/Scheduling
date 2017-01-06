@@ -41,11 +41,13 @@ public class ParsedData {
 	            
 	            this.H = sc.nextInt();
 	            for(int i=0;i<n;i++){
-	            	this.Tj[i] = sc.nextInt();
+	            	int affect =sc.nextInt();
+	            	this.Tj[i] = affect;
 	            }
 	            
 	            for(int i=0;i<n;i++){
-	            	this.Deltaj[i] = sc.nextInt();
+	            	int affect = sc.nextInt();
+	            	this.Deltaj[i] = affect;
 	            }
 	            
 	            for(int i=0;i<n;i++){
@@ -182,6 +184,7 @@ public class ParsedData {
 					for(int j2=0;j2<n;j2++){
 						
 						int aj1j2;
+			
 						if(this.aij[j1][j2]){aj1j2=1;} else{aj1j2=0;}
 						
 						constraint5[i][j1][j2] = cplex.linearIntExpr();
@@ -200,6 +203,7 @@ public class ParsedData {
 					for(int j2=0;j2<n;j2++){
 						
 						int cj1j2;
+						boolean cjj=this.cij[j1][j2];
 						if(this.cij[j1][j2]){cj1j2=1;} else{cj1j2=0;}
 						
 						constraint6[i][j1][j2] = cplex.linearIntExpr();
@@ -212,7 +216,7 @@ public class ParsedData {
 			
 			
 			// solving the model
-				if ( cplex.solve() ) {
+					cplex.solve();
 					
 					
 					cplex.output().println("Solution status = " + cplex.getStatus());
@@ -257,7 +261,7 @@ public class ParsedData {
 					}
 					
 					for (int j=0;j<sol;j++){System.out.println(Schedule[j].toString());}
-				}
+				
 				
 				cplex.end();
 		
