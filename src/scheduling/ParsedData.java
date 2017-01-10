@@ -278,6 +278,219 @@ public class ParsedData {
 	
 	}
 	
+	public boolean c_fulf (int i, int j, int xVar[][]){
+		boolean fulfills_c = true;
+		for(int k=0;k<j;k++){
+			if(xVar[i][k]==1 & cij[k][j]==false ){
+				fulfills_c=false;
+			}
+		}
+		return fulfills_c;
+	}
+	
+	public void firstfit(){
+		
+			int xVar[][]= new int [n][n];
+			int yVar[]= new int [n];
+			
+			int sol1=1;
+			
+			// FirstFit
+			int left [] = new int [n];
+			
+			for(int j1=0;j1<n;j1++){
+				for(int j2=0;j2<j1;j2++){
+					if(aij[j1][j2]==true){
+						Tj[j1]=Tj[j1]+Tj[j2];
+						Deltaj[j1]=Deltaj[j1]+Deltaj[j2];
+						Tj[j2]=0;
+						Deltaj[j2]=0;
+						for(int j3=0;j3<n;j3++){
+							if(cij[j2][j3]==false){cij[j1][j3]=false;}
+						}
+					}
+				}
+			}
+			
+			
+			for(int i=0;i<n;i++){left[i]=2*H;}
+			for(int job=0;job<n;job++){
+				for(int day=0;day<n;day++){
+					if(2*Tj[job]+Deltaj[job]<=left[day] && c_fulf(day,job,xVar)){
+						xVar[day][job]=1;
+						yVar[day]=1;
+						left[day]=left[day]-2*Tj[job]-Deltaj[job];
+						if(sol1-1<day){sol1=day+1;}
+						break;
+					}
+				}
+			}
+			
+			for(int j1=0;j1<n;j1++){
+				for(int j2=0;j2<j1;j2++){
+					if(aij[j1][j2]==true){
+						for(int i =0;i<sol1;i++){xVar[i][j2]=xVar[i][j1];}
+					}
+				}
+			}
+			
+			LinkedList<Integer> Schedule[] = new LinkedList[sol1];
+			
+			for (int j=0; j<sol1; j++) {
+				
+				Schedule[j] = new LinkedList<Integer>();
+				
+				for (int i=0; i<n; i++) {
+					if ( xVar[j][i] == 1 ) {
+						Schedule[j].add(i);
+					}
+				}
+			}
+			 System.out.println("Solution of First Fit: "+sol1);
+			for (int j=0;j<sol1;j++){System.out.println(Schedule[j].toString());}
+			
+			//Computing Lower Bound
+			
+			double sum = 0;
+			for(int j=0;j<n;j++){sum=sum+2*Tj[j]+Deltaj[j];}
+			
+			//System.out.println("Sum of processing and travel times: "+sum);
+			
+			int LB = Math.max( (int) Math.ceil(((double) sol1)/2), (int) Math.ceil(sum/(2*H)));
+			
+			System.out.println("Lower bound: "+LB);
+			
+			//Improve Solution of First Fit
+			
+			if(LB<sol1){
+				int a = LB;
+				int b = sol1;
+				explore(a);
+				while (b-a>1){
+					int toexplore = (int) Math.floor(a+((double) (b-a))/2);
+					System.out.println("Exploring if "+toexplore+" days are doable");
+					if(explore(toexplore)){
+						b=toexplore;
+					}
+					else{
+						a=toexplore;
+					}
+				}
+			}
+			else {
+				System.out.println("Solution of First Fit is optimal");
+			}
+			
+			
+	}
+	
+	public boolean feasible(int tree[], int depth, int toexplore){
+		boolean feasible = true;
+		if(depth>0){
+		int left[]= new int [toexplore];
+		for(int i=0;i<toexplore;i++){left[i]=2*H;}
+		for(int i=0;i<depth;i++){
+			left[tree[i]]=left[tree[i]]-2*Tj[i]-Deltaj[i];
+			if(left[tree[i]]<0){feasible=false;}
+			for (int j=0;j<depth;j++){
+				if(tree[i]==tree[j] & cij[i][j]==false){ feasible=false;}
+			}
+		}
+		}
+		return feasible;
+	}
+	
+	public boolean feasposs(int tree[], int depth, int toexplore){
+		boolean feasposs = false;
+		for(int i=0;i<depth;i++){
+			if(tree[i]<toexplore){feasposs=true;}
+		}
+		return feasposs;
+	}
+	
+	public boolean explore (int toexplore){
+		boolean possible = false;
+		int xVar[][]= new int [n][n];
+		int yVar[]= new int [n];
+		int sol2 = 1;
+		
+		int tree[]=new int [n]; 
+		int left[]= new int [toexplore];
+		for (int i=0; i<n; i++) {tree[i]=toexplore+1;}
+		for (int i=0; i<toexplore; i++) {left[i]=2*H;}
+		
+		int depth = 0;
+		while( tree[n-1]>=0){
+			if(feasible(tree,depth, toexplore)){
+				if(depth<n){
+					tree[depth]=0;
+					depth++;
+				}
+				else{
+					System.out.println("Feasible solution found");
+					possible=true;
+					break;
+				}
+			}
+			else{
+				if(feasposs(tree,depth, toexplore)){
+					int search = depth-1;
+					while(search>0){
+						if(tree[search]<toexplore-1){
+							tree[search]=tree[search]+1;
+							depth=search+1; 
+							break;
+						}
+						search--;
+					}
+				}
+				else{
+					System.out.println("No feasible solution found");
+					break;
+				}
+			}
+		}
+		
+		
+		
+		if (possible){
+			sol2=toexplore;
+			for(int i=0;i<toexplore;i++){
+				for(int j=0;j<n;j++){
+					if(tree[j]==i){
+						xVar[i][j]=1;
+						yVar[i]=1;
+					}
+				}
+			}
+			
+			for(int j1=0;j1<n;j1++){
+				for(int j2=0;j2<j1;j2++){
+					if(aij[j1][j2]==true){
+						for(int i =0;i<sol2;i++){xVar[i][j2]=xVar[i][j1];}
+					}
+				}
+			}
+			LinkedList<Integer> Schedule[] = new LinkedList[sol2];
+			
+			for (int j=0; j<sol2; j++) {
+				
+				Schedule[j] = new LinkedList<Integer>();
+				
+				for (int i=0; i<n; i++) {
+					if ( xVar[j][i] == 1 ) {
+						Schedule[j].add(i);
+					}
+				}
+			}
+			 System.out.println("Improved Solution: "+sol2);
+			for (int j=0;j<sol2;j++){System.out.println(Schedule[j].toString());}
+		}
+		
+		return possible;
+	}
+	
+
 	
 	
 }
